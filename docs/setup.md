@@ -102,6 +102,33 @@ SIGNER_SECRET=SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   `config.ts` helpers), not at build time, so changing `.env` does not require
   a rebuild.
 
+### Loading Configuration Offline
+
+`loadClientConfig` resolves and validates configuration without reading files or
+making network requests. By default, explicit options override environment
+variables, which override the testnet defaults. Pass an environment object to
+keep local development and tests independent of the host process environment:
+
+```ts
+import { loadClientConfig } from "@zk-payroll/core";
+
+const config = loadClientConfig({
+  offline: true,
+  env: {
+    PAYROLL_CONTRACT_ID: "CAKZGMMMJOHMSZ5V3DYKCUDNTIWBG57MAMFJDSVICNWUNVXLX6EZN3NC",
+  },
+});
+```
+
+Offline mode defaults to `http://127.0.0.1:8000` and `localnet`. Provide a local
+or mocked RPC URL with `networkUrl`, or pass it through an injected `env`
+object. Ambient process RPC/network settings are ignored in offline mode to
+avoid accidentally selecting a live endpoint. A valid contract ID or contract
+ID map is still required; the loader does not disable validation or start an
+RPC connection. Supported endpoint environment aliases are `STELLAR_RPC_URL`,
+`SOROBAN_RPC_URL`, and `RPC_URL`; the payroll contract ID aliases are
+`PAYROLL_CONTRACT_ID` and `CONTRACT_ID`.
+
 ## Local Setup Commands
 
 | Command | Purpose |

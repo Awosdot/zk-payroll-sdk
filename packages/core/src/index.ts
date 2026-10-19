@@ -68,6 +68,7 @@ export type {
   ConfigValidationResult,
   ConfigMigrationWarning,
   ConfigMigrationResult,
+  LoadClientConfigOptions,
 } from "./config";
 export {
   DEFAULT_CONFIG,
@@ -77,6 +78,7 @@ export {
   assertValidConfig,
   migrateConfig,
   detectDeprecatedConfigFields,
+  loadClientConfig,
 } from "./config";
 export * from "./cache";
 export * from "./amendments";
@@ -254,4 +256,3 @@ export * from "./policy/effectiveDateGuardrails";
 
 // ── Duplicate Payout Instruction Detection ──────────────────────────────────
 export * from "./payroll/duplicatePayoutInstructionDetector";
-

@@ -4,12 +4,63 @@ import {
   ClientConfig,
   validateConfig,
   assertValidConfig,
+  loadClientConfig,
 } from "../src/config";
 import { ValidationError } from "../src/errors";
 
 describe("ConfigBuilder, validateConfig, and ConfigPresets", () => {
   const VALID_CONTRACT_ID = "CAKZGMMMJOHMSZ5V3DYKCUDNTIWBG57MAMFJDSVICNWUNVXLX6EZN3NC";
   const VALID_CONTRACT_ID_2 = VALID_CONTRACT_ID;
+
+  describe("loadClientConfig", () => {
+    it("loads testnet defaults and validates the supplied contract ID", () => {
+      const config = loadClientConfig({
+        env: {},
+        contractId: VALID_CONTRACT_ID,
+      });
+
+      expect(config.networkUrl).toBe("https://soroban-testnet.stellar.org");
+      expect(config.network).toBe("testnet");
+      expect(config.contractId).toBe(VALID_CONTRACT_ID);
+    });
+
+    it("loads offline configuration from an injected environment", () => {
+      const config = loadClientConfig({
+        offline: true,
+        env: {
+          PAYROLL_CONTRACT_ID: VALID_CONTRACT_ID,
+          REGISTRY_CONTRACT_ID: VALID_CONTRACT_ID_2,
+        },
+      });
+
+      expect(config.networkUrl).toBe("http://127.0.0.1:8000");
+      expect(config.network).toBe("localnet");
+      expect(config.contractId).toBe(VALID_CONTRACT_ID);
+      expect(config.contractIds).toEqual({
+        payroll: VALID_CONTRACT_ID,
+        registry: VALID_CONTRACT_ID_2,
+      });
+    });
+
+    it("gives explicit options precedence over environment values", () => {
+      const config = loadClientConfig({
+        env: {
+          STELLAR_RPC_URL: "https://example.test",
+          PAYROLL_CONTRACT_ID: VALID_CONTRACT_ID,
+        },
+        networkUrl: "http://localhost:9000",
+        contractId: VALID_CONTRACT_ID_2,
+      });
+
+      expect(config.networkUrl).toBe("http://localhost:9000");
+      expect(config.contractId).toBe(VALID_CONTRACT_ID_2);
+    });
+
+    it("fails validation when contract configuration is missing", () => {
+      expect(() => loadClientConfig({ offline: true, env: {} })).toThrow(ValidationError);
+    });
+  });
+
   it("should build a valid config", () => {
     const config = new ConfigBuilder()
       .withNetworkUrl("https://soroban-testnet.stellar.org")

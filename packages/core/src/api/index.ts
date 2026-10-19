@@ -1,8 +1,8 @@
 export { PayrollService } from "../payroll";
 export type { Transaction, FilterCriteria } from "../payroll";
 export { PayrollContract } from "../contract";
-export { DEFAULT_CONFIG, ConfigPresets, ConfigBuilder } from "../config";
-export type { ClientConfig } from "../config";
+export { DEFAULT_CONFIG, ConfigPresets, ConfigBuilder, loadClientConfig } from "../config";
+export type { ClientConfig, LoadClientConfigOptions } from "../config";
 export { checkEmployerReadiness } from "../employer-readiness";
 export type {
   EmployerReadinessCheck,

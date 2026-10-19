@@ -48,6 +48,13 @@ export interface ClientConfig {
   featureFlags?: FeatureFlagsConfig;
 }
 
+export interface LoadClientConfigOptions extends Partial<ClientConfig> {
+  /** Use a local RPC endpoint by default instead of the public testnet endpoint. */
+  offline?: boolean;
+  /** Environment values to read instead of the current process environment. */
+  env?: Record<string, string | undefined>;
+}
+
 export interface ConfigValidationErrorDetail {
   field: string;
   message: string;
@@ -437,6 +444,76 @@ export const DEFAULT_CONFIG: ClientConfig = {
   network: "testnet",
   contractId: "",
 };
+
+/**
+ * Loads and validates client configuration from explicit options and common
+ * environment variables. This function performs no filesystem or network I/O.
+ *
+ * Explicit options take precedence over environment variables, which take
+ * precedence over the standard testnet defaults. In offline mode, the default
+ * endpoint is a local Soroban RPC server; supply a contract ID or contract IDs
+ * for the local or mocked environment. Ambient process RPC/network settings are
+ * ignored in offline mode; pass an `env` object or explicit URL to opt in.
+ *
+ * Recognized environment variables include `STELLAR_RPC_URL`, `SOROBAN_RPC_URL`,
+ * or `RPC_URL`; `PAYROLL_CONTRACT_ID` or `CONTRACT_ID`; and `STELLAR_NETWORK`.
+ *
+ * @throws ValidationError if the resolved configuration is invalid.
+ */
+export function loadClientConfig(options: LoadClientConfigOptions = {}): ClientConfig {
+  const env = options.env ?? (typeof process !== "undefined" ? process.env : {});
+  const endpoint =
+    options.offline && options.env === undefined
+      ? undefined
+      : env.STELLAR_RPC_URL || env.SOROBAN_RPC_URL || env.RPC_URL;
+  const defaults = options.offline
+    ? {
+        networkUrl: "http://127.0.0.1:8000",
+        rpcUrl: "http://127.0.0.1:8000",
+        network: "localnet",
+      }
+    : DEFAULT_CONFIG;
+
+  const envContractIds: Record<string, string> = {};
+  const contractIdEnvironment = [
+    ["payroll", env.PAYROLL_CONTRACT_ID],
+    ["registry", env.REGISTRY_CONTRACT_ID],
+    ["salaryCommitment", env.SALARY_COMMITMENT_CONTRACT_ID],
+    ["proofVerifier", env.PROOF_VERIFIER_CONTRACT_ID],
+    ["paymentExecutor", env.PAYMENT_EXECUTOR_CONTRACT_ID],
+  ] as const;
+  for (const [name, value] of contractIdEnvironment) {
+    if (value) envContractIds[name] = value;
+  }
+
+  const resolved: Partial<ClientConfig> = {
+    networkUrl: options.networkUrl ?? endpoint ?? defaults.networkUrl,
+    rpcUrl: options.rpcUrl ?? options.networkUrl ?? endpoint ?? defaults.rpcUrl,
+    network:
+      options.network ??
+      (options.offline && options.env === undefined ? undefined : env.STELLAR_NETWORK) ??
+      defaults.network,
+    contractId:
+      options.contractId ??
+      env.PAYROLL_CONTRACT_ID ??
+      env.CONTRACT_ID ??
+      defaults.contractId,
+    contractIds:
+      options.contractIds ??
+      (Object.keys(envContractIds).length ? envContractIds : undefined),
+    adminKey:
+      options.adminKey ??
+      env.SIGNER_SECRET ??
+      env.STELLAR_SECRET_KEY ??
+      env.ADMIN_SECRET,
+    proofConfig: options.proofConfig,
+    retryPolicy: options.retryPolicy,
+    retryBudgets: options.retryBudgets,
+    featureFlags: options.featureFlags,
+  };
+
+  return assertValidConfig(resolved);
+}
 
 /**
  * Single deprecated field discovered while migrating a legacy config.
