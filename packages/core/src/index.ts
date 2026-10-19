@@ -229,3 +229,9 @@ export * from "./revision";
 
 // Employee Activation Prerequisite Checks (#636)
 export * from "./employees/activationPrerequisites";
+
+// Treasury Balance Reservation Checks (#693)
+export * from "./treasury/reservations";
+
+// Employee Payment Destination Confirmation (#698)
+export * from "./employees/destinationConfirmation";
