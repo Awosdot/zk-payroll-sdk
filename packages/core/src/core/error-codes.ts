@@ -403,6 +403,23 @@ export const ERROR_CODE_REGISTRY: Record<string, ErrorCodeEntry> = {
     suggestedMessage:
       "Retry diagnostics are currently unavailable for this payout. The failure record may be missing or incomplete; refresh and try again.",
   },
+
+  // &#9989; Payroll Payload Schema Detection &#9989;
+  PAYROLL_SCHEMA_VERSION_UNSUPPORTED: {
+    category: ErrorCategory.VALIDATION,
+    meaning: "The payroll payload declares a schema version this SDK build does not support.",
+    retryable: false,
+    suggestedMessage:
+      "This payroll payload uses an unsupported schema version. Upgrade the SDK, or reserialize the payload to a supported version, then try again.",
+  },
+  PAYROLL_SCHEMA_PAYLOAD_INVALID: {
+    category: ErrorCategory.VALIDATION,
+    meaning:
+      "The payroll payload is not an object, or its schema version field is missing, malformed, or contradictory.",
+    retryable: false,
+    suggestedMessage:
+      'The payroll payload could not be inspected. Ensure it is an object carrying a valid `schemaVersion` string such as "1.0" and try again.',
+  },
 };
 
 /**

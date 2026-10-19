@@ -242,6 +242,10 @@ export * from "./schedules";
 // (it previously referenced a non-existent `./salary-policy`).
 export * from "./payroll/salaryPolicyImpact";
 
+// ── Payroll Payload Schema Detection & Migration ────────────────────────────
+export * from "./schema";
+export * from "./migrations";
+export { detectPayrollPayloadSchema } from "./payroll/payloadSchema";
 // ── Cross-Currency Rounding Safeguards ──────────────────────────────────────
 export * from "./settlement/roundingSafeguards";
 
