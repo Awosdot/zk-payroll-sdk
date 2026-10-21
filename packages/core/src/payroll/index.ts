@@ -38,3 +38,7 @@ export * from "./compensationGroupMembership";
 export * from "./reviewDecisionCompleteness";
 export * from "./releaseReadinessAssessment";
 export * from "./companyActivationGuard";
+export * from "./recipientResolver";
+export * from "./dryRunExecutor";
+export * from "./payoutVariance";
+export * from "./auditTrail";
