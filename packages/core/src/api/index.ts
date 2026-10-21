@@ -11,6 +11,14 @@ export type {
   EmployerReadinessInput,
   EmployerReadinessResult,
 } from "../employer-readiness";
+export {
+  assessPayrollReleaseReadiness,
+  type PayrollReleaseReadinessCheck,
+  type PayrollReleaseReadinessCheckId,
+  type PayrollReleaseReadinessCheckStatus,
+  type PayrollReleaseReadinessInput,
+  type PayrollReleaseReadinessResult,
+} from "../payroll/releaseReadinessAssessment";
 export * from "../types";
 
 export {
