@@ -431,6 +431,28 @@ const SENSITIVE_PATTERNS: RegExp[] = [
   /signingKey\s*[:=]\s*\S+/gi,
 ];
 
+function sanitizeContextValue(
+  value: unknown,
+  sensitiveKeys: ReadonlySet<string>,
+  placeholder: string,
+): unknown {
+  if (Array.isArray(value)) {
+    return value.map((item) => sanitizeContextValue(item, sensitiveKeys, placeholder));
+  }
+
+  if (value && typeof value === "object") {
+    const sanitized: Record<string, unknown> = {};
+    for (const [key, nestedValue] of Object.entries(value)) {
+      sanitized[key] = sensitiveKeys.has(key)
+        ? placeholder
+        : sanitizeContextValue(nestedValue, sensitiveKeys, placeholder);
+    }
+    return sanitized;
+  }
+
+  return value;
+}
+
 /**
  * A formatted error ready for logging or display in dashboards.
  *
@@ -562,14 +584,11 @@ export function formatRedactedError(error: unknown, placeholder = "[redacted]"):
     "refresh_token",
     "signingKey",
   ]);
-  const sanitizedContext: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(context)) {
-    if (sensitiveKeys.has(key)) {
-      sanitizedContext[key] = placeholder;
-    } else {
-      sanitizedContext[key] = value;
-    }
-  }
+  const sanitizedContext = sanitizeContextValue(
+    context,
+    sensitiveKeys,
+    placeholder,
+  ) as Record<string, unknown>;
 
   const category = CATEGORY_MAP[code] ?? "Unknown";
   const retryable = RETRYABLE_CODES.has(code as ContractErrorCodeType);
@@ -674,3 +693,4 @@ export function mapRpcError(error: unknown, context: ErrorContext = {}): Contrac
     cause
   );
 }
+
