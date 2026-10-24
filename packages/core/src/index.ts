@@ -235,3 +235,6 @@ export * from "./treasury/reservations";
 
 // Employee Payment Destination Confirmation (#698)
 export * from "./employees/destinationConfirmation";
+
+// Interrupted Payroll Run Recovery Controls (#742)
+export * from "./payroll/runRecovery";
